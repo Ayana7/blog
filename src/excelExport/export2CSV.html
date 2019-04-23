@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>导出csv表格</title>
+</head>
+<body>
+    <button onclick="export2CSV()">导出csv表格</button>
+    <script>
+        /**
+         * @param value //[{'姓名':'小明','成绩','100'}]
+         * @param columns //['姓名','成绩']
+         * @param exportFilename // '成绩统计表'
+         */
+        var csvSeparator = ','; 
+        function exportCSV(value, columns, exportFilename) {
+            const data = value;
+            let csv = '\ufeff';
+            // headers
+            for (let i = 0; i < columns.length; i++) {
+            const column = columns[i];
+            csv += '"' + (column.header || column) + '"';
+            if (i < (columns.length - 1)) {
+                csv += csvSeparator;
+            }
+            }
+            // body
+            data.forEach((record) => {
+            csv += '\n';
+            for (let i_1 = 0; i_1 < columns.length; i_1++) {
+                const column = columns[i_1];
+                csv += '"' + resolveFieldData(record, column) + '"';
+                if (i_1 < (columns.length - 1)) {
+                csv += csvSeparator;
+                }
+            }
+            });
+            console.log(csv);
+            // return;
+            const blob = new Blob([csv], {
+            type: 'text/csv;charset=utf-8;'
+            });
+            if (window.navigator.msSaveOrOpenBlob) {
+            navigator.msSaveOrOpenBlob(blob, exportFilename + '.csv');
+            } else {
+            const link = document.createElement('a');
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            if (link.download !== undefined) {
+                link.setAttribute('href', URL.createObjectURL(blob));
+                link.setAttribute('download', exportFilename + '.csv');
+                link.click();
+            } else {
+                csv = 'data:text/csv;charset=utf-8,' + csv;
+                window.open(encodeURI(csv));
+            }
+            document.body.removeChild(link);
+            }
+        }
+
+        function resolveFieldData(data, field) {
+            if (data && field) {
+            if (field.indexOf('.') === -1) {
+                return data[field];
+            } else {
+                const fields = field.split('.');
+                let value = data;
+                for (let i = 0, len = fields.length; i < len; ++i) {
+                if (value === null) {
+                    return null;
+                }
+                value = value[fields[i]];
+                }
+                return value;
+            }
+            } else {
+            return null;
+            }
+        }
+        
+        function export2CSV() {
+            var value = [{'姓名':'小明','成绩':'100'},{'姓名':'小明2','成绩':'1003'}];
+            var columns = ['姓名','成绩'];
+            var exportFilename = '成绩统计表';
+            exportCSV(value, columns, exportFilename);
+        }
+        
+
+
+    </script>
+</body>
+</html>
